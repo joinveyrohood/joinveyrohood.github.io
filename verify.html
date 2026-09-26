@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VeyroHood — Verify</title>
+<meta name="theme-color" content="#07080c">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="verify">
+<div class="wrap">
+<nav>
+  <a class="logo" href="index.html">VEYROHOOD<small>NFT COMMUNITY</small></a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="missions.html" data-gate="missions">Missions</a>
+    <a class="active" href="verify.html">Verify</a>
+    <a href="dashboard.html" data-gate="dashboard">Dashboard</a>
+    <a href="how.html">How it works</a>
+  </div>
+</nav>
+<div class="phases">
+  <a class="phase done" href="index.html"><b>PHASE 01</b><span>Home</span></a>
+  <a class="phase done" href="missions.html"><b>PHASE 02</b><span>Missions</span></a>
+  <div class="phase now"><b>PHASE 03</b><span>Verify</span></div>
+</div>
+<section class="hero" style="grid-template-columns:1fr">
+  <div>
+    <div class="kicker">PHASE 03</div>
+    <h1>LOCK YOUR <i>SEAT.</i></h1>
+    <p class="lead">Connect one wallet and complete entry. Dashboard opens only after this succeeds.</p>
+  </div>
+</section>
+<section class="panel">
+  <h2>1 / CONNECT WALLET</h2>
+  <p class="muted">One wallet = one seat.</p>
+  <button class="btn" id="connectWallet" type="button">CONNECT WALLET</button>
+  <div id="walletPick" class="pick"></div>
+  <div id="walletAddress" class="wallet-line"></div>
+</section>
+<section class="panel">
+  <h2>2 / YOUR LINKS</h2>
+  <label>X username</label><input id="xUsername" placeholder="your X handle" autocomplete="off">
+  <label>Discord username</label><input id="discordUsername" placeholder="your Discord name" autocomplete="off">
+  <label>Quote link</label><input id="quoteLink" placeholder="your quote post link" autocomplete="off">
+  <label>Reply link</label><input id="replyLink" placeholder="your reply post link" autocomplete="off">
+  <label>Referral code</label><input id="referralCode" placeholder="optional" autocomplete="off">
+  <button class="btn" id="submitVerification" type="button">SAVE DETAILS</button>
+</section>
+<section class="panel">
+  <h2>3 / COMPLETE ENTRY</h2>
+  <label>Network</label>
+  <select id="chainSelect">
+    <option value="4663">Robinhood Chain</option>
+    <option value="1">Ethereum</option>
+  </select>
+  <p class="muted" style="margin-top:10px">Entry is $0.30 USDG. Confirm in your wallet. Do not send twice.</p>
+  <button class="btn" id="payButton" type="button">PAY $0.30 USDG</button>
+</section>
+<section class="panel">
+  <h2>ALREADY PAID?</h2>
+  <label>Transaction hash</label><input id="txHashInput" placeholder="paste hash only if needed" autocomplete="off">
+  <button class="btn ghost" id="recheckBtn" type="button">RECHECK</button>
+  <div id="formStatus" class="status"></div>
+</section>
+<footer><span>VeyroHood</span><span>Dashboard locked until verified</span></footer>
+</div>
+<script src="gate.js"></script>
+<script src="wallet.js"></script>
+<script>
+const formStatus=document.getElementById("formStatus");
+function showStatus(message,type){formStatus.textContent=message;formStatus.className="status show "+type}
+function isValidUrl(value){try{const u=new URL(value);return u.protocol==="https:"||u.protocol==="http:"}catch{return false}}
+function selectedChain(){return Number(document.getElementById("chainSelect").value)}
+function openDash(){vhMarkVerified();location.href="dashboard.html"}
+async function markPaid(txHash){
+  const response=await fetch(API_URL+"/api/verify-payment",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({wallet:window.VH.wallet,txHash,chainId:selectedChain()})});
+  const result=await response.json();
+  if(!response.ok||!result.success) throw new Error(result.error||"Payment check failed");
+  showStatus("Verified. Opening dashboard...","success");
+  setTimeout(openDash,700);
+}
+const params=new URLSearchParams(location.search);
+if(params.get("ref")) document.getElementById("referralCode").value=params.get("ref");
+document.getElementById("connectWallet").onclick=()=>connectFlow("walletPick",(wallet,name)=>{
+  document.getElementById("walletAddress").textContent=wallet.slice(0,6)+"…"+wallet.slice(-4)+" · "+name;
+  document.getElementById("connectWallet").textContent="WALLET LOCKED";
+  showStatus("Wallet connected","success");
+},msg=>showStatus(msg,"error"));
+document.getElementById("submitVerification").onclick=async()=>{
+  const payload={wallet_address:window.VH.wallet,x_username:document.getElementById("xUsername").value.trim(),discord_username:document.getElementById("discordUsername").value.trim(),quote_link:document.getElementById("quoteLink").value.trim(),reply_link:document.getElementById("replyLink").value.trim(),referral_code:document.getElementById("referralCode").value.trim()};
+  if(!payload.wallet_address) return showStatus("Connect wallet first.","error");
+  if(!payload.x_username||!payload.discord_username) return showStatus("Enter X and Discord usernames.","error");
+  if(!isValidUrl(payload.quote_link)||!isValidUrl(payload.reply_link)) return showStatus("Enter valid quote and reply links.","error");
+  try{
+    const response=await fetch(API_URL+"/verify",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    const result=await response.json();
+    if(!response.ok||!result.success) throw new Error(result.error||"Submit failed");
+    showStatus("Saved. Complete entry next.","success");
+  }catch(error){showStatus(error.message,"error")}
+};
+document.getElementById("payButton").onclick=async()=>{
+  if(!window.VH.wallet||!window.VH.provider) return showStatus("Connect wallet first.","error");
+  const chainId=selectedChain();
+  try{
+    await switchChain(chainId);
+    const data="0xa9059cbb"+pad64(TREASURY)+pad64(toHex(PAY_AMOUNT));
+    const txHash=await window.VH.provider.request({method:"eth_sendTransaction",params:[{from:window.VH.wallet,to:TOKENS[String(chainId)],data,value:"0x0"}]});
+    document.getElementById("txHashInput").value=txHash;
+    showStatus("Payment sent. Checking...","success");
+    let lastError="Not confirmed yet";
+    for(let i=0;i<8;i++){
+      try{await markPaid(txHash);return;}catch(error){lastError=error.message;await new Promise(r=>setTimeout(r,2000));}
+    }
+    throw new Error(lastError+". Paste the hash and tap Recheck.");
+  }catch(error){showStatus(error.message||"Payment failed","error")}
+};
+document.getElementById("recheckBtn").onclick=async()=>{
+  if(!window.VH.wallet) return showStatus("Connect wallet first.","error");
+  const txHash=document.getElementById("txHashInput").value.trim();
+  if(!/^0x[a-fA-F0-9]{64}$/.test(txHash)) return showStatus("Paste a valid hash.","error");
+  try{await markPaid(txHash);}catch(error){showStatus(error.message,"error")}
+};
+</script>
+</body>
+</html>
