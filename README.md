@@ -1,2 +1,2 @@
-# joinveyrohood.github.io
-VeyroHood live site
+# VeyroHood
+Live: https://joinveyrohood.github.io/

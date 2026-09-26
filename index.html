@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VeyroHood — NFT Community</title>
+<meta name="theme-color" content="#07080c">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="home">
+<div class="wrap">
+<nav>
+  <a class="logo" href="index.html">VEYROHOOD<small>NFT COMMUNITY</small></a>
+  <div class="nav-links">
+    <a class="active" href="index.html">Home</a>
+    <a href="missions.html" data-gate="missions">Missions</a>
+    <a href="verify.html" data-gate="verify">Verify</a>
+    <a href="dashboard.html" data-gate="dashboard">Dashboard</a>
+    <a href="how.html">How it works</a>
+  </div>
+</nav>
+<div class="phases">
+  <div class="phase now"><b>PHASE 01</b><span>Home</span></div>
+  <div class="phase"><b>PHASE 02</b><span>Missions locked</span></div>
+  <div class="phase"><b>PHASE 03</b><span>Verify locked</span></div>
+</div>
+<section class="hero">
+  <div>
+    <div class="kicker">VEYROHOOD · NFT COMMUNITY</div>
+    <h1>EARN YOUR PLACE.<br><i>MINT YOUR HOOD.</i></h1>
+    <p class="lead">Press Start Mission to begin. Nothing else opens until you finish each phase.</p>
+    <div class="actions">
+      <button class="btn" id="startMission" type="button">START MISSION</button>
+    </div>
+  </div>
+  <div class="portrait"><img src="https://raw.githubusercontent.com/joinveyrohood/NFTwhitelist/main/character.jpg" alt="VeyroHood character"></div>
+</section>
+<section class="stats">
+  <div class="card stat">Supply<b>10,000</b></div>
+  <div class="card stat">OG seats<b>1,000</b></div>
+  <div class="card stat">Whitelist<b>9,000</b></div>
+  <div class="card stat">Entry fee<b>$0.30</b></div>
+</section>
+<section class="grid3">
+  <div class="card"><h2>01 HOME</h2><p class="rule">Start here. Missions stay closed until you press Start Mission.</p></div>
+  <div class="card"><h2>02 MISSIONS</h2><p class="rule">Finish all four quests. Verify stays closed until then.</p></div>
+  <div class="card"><h2>03 VERIFY</h2><p class="rule">Complete entry. Dashboard stays closed until you are verified.</p></div>
+</section>
+<footer><span>VeyroHood</span><span>Start Mission is the only way in</span></footer>
+</div>
+<script src="gate.js"></script>
+<script>
+document.getElementById("startMission").onclick=function(){vhGoMissions()};
+</script>
+</body>
+</html>
