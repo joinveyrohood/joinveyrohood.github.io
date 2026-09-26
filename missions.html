@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VeyroHood — Missions</title>
+<meta name="theme-color" content="#07080c">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="missions">
+<div class="wrap">
+<nav>
+  <a class="logo" href="index.html">VEYROHOOD<small>NFT COMMUNITY</small></a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a class="active" href="missions.html">Missions</a>
+    <a href="verify.html" data-gate="verify">Verify</a>
+    <a href="dashboard.html" data-gate="dashboard">Dashboard</a>
+    <a href="how.html">How it works</a>
+  </div>
+</nav>
+<div class="phases">
+  <a class="phase done" href="index.html"><b>PHASE 01</b><span>Home</span></a>
+  <div class="phase now"><b>PHASE 02</b><span>Missions</span></div>
+  <div class="phase" id="phase3"><b>PHASE 03</b><span>Verify locked</span></div>
+</div>
+<section class="hero" style="grid-template-columns:1fr">
+  <div>
+    <div class="kicker">PHASE 02</div>
+    <h1>OPEN EVERY <i>MISSION.</i></h1>
+    <p class="lead">Click each mission. Verify stays closed until all four are opened.</p>
+  </div>
+</section>
+<section class="panel">
+  <h2>PROGRESS</h2>
+  <div style="display:flex;justify-content:space-between" class="muted"><span>Opened</span><span id="progressText">0 / 4</span></div>
+  <div class="bar"><div class="fill" id="progressFill"></div></div>
+</section>
+<section class="panel">
+  <h2>MISSIONS</h2>
+  <div class="mission" id="row-follow">
+    <div><strong>01 / FOLLOW</strong><p class="muted">Follow @VeyroHood on X</p></div>
+    <a class="btn ghost mission-open" data-mission="follow" href="https://x.com/VeyroHood" target="_blank" rel="noopener">OPEN X</a>
+  </div>
+  <div class="mission" id="row-discord">
+    <div><strong>02 / DISCORD</strong><p class="muted">Join the community Discord</p></div>
+    <a class="btn ghost mission-open" data-mission="discord" href="https://discord.gg/6CYd3ewU5" target="_blank" rel="noopener">JOIN</a>
+  </div>
+  <div class="mission" id="row-quote">
+    <div><strong>03 / QUOTE</strong><p class="muted">Quote the pinned post</p></div>
+    <a class="btn ghost mission-open" data-mission="quote" href="https://x.com/VeyroHood/status/2095434542094115048" target="_blank" rel="noopener">QUOTE</a>
+  </div>
+  <div class="mission" id="row-reply">
+    <div><strong>04 / REPLY</strong><p class="muted">Reply on the same pinned post</p></div>
+    <a class="btn ghost mission-open" data-mission="reply" href="https://x.com/VeyroHood/status/2095434542094115048" target="_blank" rel="noopener">REPLY</a>
+  </div>
+</section>
+<section class="panel">
+  <p class="warn" id="lockNote">Open all four missions to unlock Verify.</p>
+  <div class="actions" style="margin-top:18px">
+    <a class="btn" id="goVerify" href="#">VERIFY LOCKED</a>
+  </div>
+</section>
+<footer><span>VeyroHood</span><span>Phase 02 of 03</span></footer>
+</div>
+<script src="gate.js"></script>
+<script>
+const go=document.getElementById("goVerify");
+const phase3=document.getElementById("phase3");
+const note=document.getElementById("lockNote");
+function render(){
+  const c=vhClicks();
+  const n=["follow","discord","quote","reply"].filter(k=>c[k]).length;
+  document.getElementById("progressText").textContent=n+" / 4";
+  document.getElementById("progressFill").style.width=(n/4*100)+"%";
+  ["follow","discord","quote","reply"].forEach(function(k){
+    const row=document.getElementById("row-"+k);
+    if(c[k]) row.style.borderColor="var(--green)";
+  });
+  if(n===4){
+    go.href="verify.html";
+    go.textContent="GO VERIFY";
+    phase3.className="phase done";
+    phase3.innerHTML="<b>PHASE 03</b><span>Verify unlocked</span>";
+    note.textContent="All missions opened. Verify is unlocked.";
+    note.style.color="var(--green)";
+  }else{
+    go.href="#";
+    go.textContent="VERIFY LOCKED";
+    phase3.className="phase";
+    phase3.innerHTML="<b>PHASE 03</b><span>Verify locked</span>";
+    note.textContent="Open all four missions to unlock Verify.";
+    note.style.color="var(--danger)";
+  }
+  vhBindNav();
+}
+document.querySelectorAll(".mission-open").forEach(function(a){
+  a.addEventListener("click", function(){
+    vhMarkClick(a.getAttribute("data-mission"));
+    a.textContent="OPENED";
+    render();
+  });
+});
+go.addEventListener("click",function(e){
+  if(!vhMissionsDone()){
+    e.preventDefault();
+    note.textContent="Open all four missions first.";
+  }
+});
+render();
+</script>
+</body>
+</html>
